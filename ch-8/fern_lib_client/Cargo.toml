@@ -1,0 +1,10 @@
+[package]
+name = "fern_lib_client"
+version = "0.1.0"
+authors = ["Andrew Bissell <abissell@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+fern_lib = { path = "../fern_lib" }

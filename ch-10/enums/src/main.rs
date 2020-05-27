@@ -24,11 +24,13 @@ fn main() {
         left: jupiter_tree,
         right: mercury_tree,
     }));
-    let tree = NonEmpty(Box::new(TreeNode {
+    let mut tree = NonEmpty(Box::new(TreeNode {
         element: "Saturn",
         left: mars_tree,
         right: Empty,
     }));
+    tree.add("Pluto");
+    tree.add("Venus");
 
     assert_eq!(rough_time_to_english(RoughTime::InThePast(TimeUnit::Hours, 1)), "an hour ago");
     assert_eq!(rough_time_to_english(RoughTime::InThePast(TimeUnit::Days, 1)), "a day ago");
@@ -40,6 +42,13 @@ fn main() {
 
     assert_eq!(describe_point(0, 0), "at the origin");
     assert_eq!(describe_point(0, 3), "on the y axis");
+
+    let mut hello_chars = "hello".chars().peekable();
+    let at_end =
+        match hello_chars.peek() {
+            Some(&'\r') | Some(&'\n') | None => true,
+            _ => false,
+        };
 }
 
 enum Ordering {
@@ -127,6 +136,25 @@ struct TreeNode<T> {
     element: T,
     left: BinaryTree<T>,
     right: BinaryTree<T>,
+}
+
+impl<T: Ord> BinaryTree<T> {
+    fn add(&mut self, value: T) {
+        match *self {
+            BinaryTree::Empty =>
+                *self = BinaryTree::NonEmpty(Box::new(TreeNode {
+                    element: value,
+                    left: BinaryTree::Empty,
+                    right: BinaryTree::Empty,
+                })),
+            BinaryTree::NonEmpty(ref mut node) =>
+                if value <= node.element {
+                    node.left.add(value);
+                } else {
+                    node.right.add(value);
+                }
+        }
+    }
 }
 
 fn describe_point(x: i32, y: i32) -> &'static str {

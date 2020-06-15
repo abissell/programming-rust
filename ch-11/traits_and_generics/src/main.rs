@@ -26,6 +26,10 @@ fn main() {
     say_hello(&mut sink).expect("Couldn't say hello to sink");
 
     assert_eq!('$'.is_emoji(), false);
+
+    let zero = 0; // type unspecified; could be `i8`, `u8`, ...
+    // zero.abs(); // error: method `abs` not found
+    i64::abs(zero); // ok
 }
 
 use std::io::{Write, Result};
@@ -135,4 +139,95 @@ pub fn save_configuration(config: &HashMap<String, String>)
     // The serde `.serialize()` method does the rest.
     config.serialize(&mut serializer)?;
     Ok(())
+}
+
+pub trait Spliceable {
+    fn splice(&self, other: &Self) -> Self;
+}
+
+trait StringSet {
+    /// Return a new empty set.
+    fn new() -> Self;
+
+    /// Return a set that contains all the strings in `strings`.
+    fn from_slice(strings: &[&str]) -> Self;
+
+    /// Find out if this set contains a particular `value`.
+    fn contains(&self, string: &str) -> bool;
+
+    /// Add a string to this set.
+    fn add(&mut self, string: &str);
+}
+
+/// Return the set of words in `document` that aren't in `wordlist`.
+fn unknown_words<S: StringSet>(document: &Vec<String>, wordlist: &S) -> S {
+    let mut unknowns = S::new();
+    for word in document {
+        if !wordlist.contains(word) {
+            unknowns.add(word);
+        }
+    }
+    unknowns
+}
+
+/// Loop over an iterator, storing the values in a new vector.
+fn collect_into_vector<I: Iterator>(iter: I) -> Vec<I::Item> {
+    let mut results = Vec::new();
+    for value in iter {
+        results.push(value);
+    }
+    results
+}
+
+/// Print out all the values produced by an iterator
+fn dump<I>(iter: I)
+    where I: Iterator, I::Item: std::fmt::Debug
+{
+    for (index, value) in iter.enumerate() {
+        println!("{}: {:?}", index, value);
+    }
+}
+
+/// Print out all the values produced by a String iterator
+fn dump_strings(iter: &mut dyn Iterator<Item=String>)
+{
+    for (index, value) in iter.enumerate() {
+        println!("{}: {:?}", index, value);
+    }
+}
+
+trait Pattern {
+    type Match;
+
+    fn search(&self, string: &str) -> Option<Self::Match>;
+}
+
+/// You can search a string for a particular character.
+impl Pattern for char {
+    /// A "match" is just the location where the
+    /// character was found.
+    type Match = usize;
+
+    fn search(&self, _string: &str) -> Option<usize> {
+        // Find the value in the string & return position
+        Some(2)
+    }
+}
+
+use std::ops::{Add, Mul};
+
+fn dot<N>(v1: &[N], v2: &[N]) -> N
+    where N: Add<Output=N> + Mul<Output=N> + Default + Copy
+{
+    let mut total = N::default();
+    for i in 0 .. v1.len() {
+        total = total + v1[i] * v2[i];
+    }
+    total
+}
+
+#[test]
+fn test_dot() {
+    assert_eq!(dot(&[1, 2, 3, 4], &[1, 1, 1, 1]), 10);
+    assert_eq!(dot(&[53.0, 7.0], &[1.0, 5.0]), 88.0);
 }

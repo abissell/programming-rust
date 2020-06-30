@@ -53,6 +53,13 @@ fn main() {
         = "Great Teacher Onizuka".chars().partition(|&c| c.is_uppercase());
     assert_eq!(upper, "GTO");
     assert_eq!(lower, "reat eacher nizuka");
+
+    println!("{:?}", ping(Ipv4Addr::new(23, 21, 68, 141))); // pass an Ipv4Addr
+    println!("{:?}", ping([66, 146, 219, 98]));             // pass a [u8; 4]
+    println!("{:?}", ping(0xd076eb94_u32));                 // pass a u32
+
+    let text = String::from("Beautiful Soup");
+    let bytes: Vec<u8> = text.into();
 }
 
 struct Appellation {
@@ -105,3 +112,11 @@ impl<T> DerefMut for Selector<T> {
 
 fn show_it(thing: &str) { println!("{}", thing); }
 fn show_it_generic<T: Display>(thing: T) { println!("{}", thing); }
+
+use std::net::Ipv4Addr;
+fn ping<A>(address: A) -> std::io::Result<bool>
+    where A: Into<Ipv4Addr>
+{
+    let _ipv4_address = address.into();
+    Ok(true)
+}
